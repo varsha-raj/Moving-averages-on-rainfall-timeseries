@@ -52,7 +52,11 @@ arrange(rainfall_starttimeYear) %>%
 
 group_by(rainfall_starttimeYear) %>% 
 
-summarize(largest_event_volume = max(event_vol_in)) %>% na.omit()
+summarize(largest_event_volume = max(event_vol_in)) %>% na.omit() %>%
+
+mutate(year_no = seq_along(rainfall_starttimeYear)) %>%
+
+select(year_no, everything())
 
 #Datafrane for 20-year moving averages
 
@@ -61,16 +65,16 @@ MA20yr_df <- d_max_events %>%
 mutate(yr_20_MA = rollmean(largest_event_volume, 20, align='right', fill=NA)) 
 
 #Linear regression of largest event volumes for each year to calculate slope
-regress = coef(lm(largest_event_volume ~ rainfall_starttimeYear, data = d_max_events))
+regress = coef(lm(largest_event_volume ~ year_no, data = d_max_events))
 
 ## Create plots using ggplot
 p1 <- ggplot()
 
-p2 <- p1 + geom_line(data= MA20yr_df, aes(x= rainfall_starttimeYear, y=yr_20_MA, color=''), 
+p2 <- p1 + geom_line(data= MA20yr_df, aes(x= year_no, y=yr_20_MA, color=''), 
 
   linetype='solid', size=0.5)  
 
-p3 <-  p2 + geom_line(data= d_max_events, aes(x= rainfall_starttimeYear, y=largest_event_volume, linetype= ''), 
+p3 <-  p2 + geom_line(data= d_max_events, aes(x= year_no, y=largest_event_volume, linetype= ''), 
 
   color='blue', size=0.5) + geom_abline(intercept = regress[[1]], slope = regress[[2]])
 
